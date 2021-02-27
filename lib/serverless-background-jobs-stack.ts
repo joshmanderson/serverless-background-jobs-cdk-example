@@ -1,9 +1,65 @@
-import * as cdk from '@aws-cdk/core';
+import * as path from "path";
 
-export class ServerlessBackgroundJobsStack extends cdk.Stack {
-  constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
+import { Construct, Stack, StackProps, Duration } from "@aws-cdk/core";
+import { Topic, SubscriptionFilter } from "@aws-cdk/aws-sns";
+import { Queue } from "@aws-cdk/aws-sqs";
+import { SqsSubscription } from "@aws-cdk/aws-sns-subscriptions";
+import { NodejsFunction } from "@aws-cdk/aws-lambda-nodejs";
+import { SqsEventSource } from "@aws-cdk/aws-lambda-event-sources";
+
+import { jobConfigs } from "../src";
+import { Alarm } from "@aws-cdk/aws-cloudwatch";
+
+export class ServerlessBackgroundJobsStack extends Stack {
+  constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
-    // The code that defines your stack goes here
+    // Create the SNS topic
+    const snsTopic = new Topic(this, "BackgroundJobsTopic");
+
+    for (const jobConfig of jobConfigs) {
+      // Create the SQS dead letter queue for the job
+      const sqsDeadLetterQueue = new Queue(this, `${jobConfig.name}DLQ`);
+
+      // Create the SQS queue for the job
+      const sqsQueue = new Queue(this, `${jobConfig.name}Queue`, {
+        visibilityTimeout: Duration.seconds(jobConfig.retryDelaySeconds),
+        deadLetterQueue: {
+          queue: sqsDeadLetterQueue, // Utilize the SQS dead letter queue created above
+          maxReceiveCount: jobConfig.maxAttempts,
+        },
+      });
+
+      // Create the lambda function for the job
+      const lambdaFunction = new NodejsFunction(
+        this,
+        `${jobConfig.name}Function`,
+        {
+          entry: path.join("src", "jobs", `${jobConfig.name}.ts`),
+          handler: "processJob",
+        }
+      );
+
+      // Add the SQS queue as an event source for the lambda function
+      lambdaFunction.addEventSource(new SqsEventSource(sqsQueue));
+
+      // Subscribe the SQS queue to the SNS topic
+      snsTopic.addSubscription(
+        new SqsSubscription(sqsQueue, {
+          filterPolicy: {
+            jobName: SubscriptionFilter.stringFilter({
+              whitelist: [jobConfig.name],
+            }),
+          },
+        })
+      );
+
+      // Create a CloudWatch alarm on the SQS dead letter queue
+      new Alarm(this, `${jobConfig.name}FailureAlarm`, {
+        metric: sqsDeadLetterQueue.metricApproximateNumberOfMessagesVisible(),
+        threshold: jobConfig.failedJobCountForAlarm,
+        evaluationPeriods: 1,
+      });
+    }
   }
 }
