@@ -1,6 +1,12 @@
 import * as path from "path";
 
-import { Construct, Stack, StackProps, Duration } from "@aws-cdk/core";
+import {
+  Construct,
+  Stack,
+  StackProps,
+  Duration,
+  CfnOutput,
+} from "@aws-cdk/core";
 import { Topic, SubscriptionFilter } from "@aws-cdk/aws-sns";
 import { Queue } from "@aws-cdk/aws-sqs";
 import { SqsSubscription } from "@aws-cdk/aws-sns-subscriptions";
@@ -14,8 +20,10 @@ export class ServerlessBackgroundJobsStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
+    const snsTopicId = "BackgroundJobsTopic";
+
     // Create the SNS topic
-    const snsTopic = new Topic(this, "BackgroundJobsTopic");
+    const snsTopic = new Topic(this, snsTopicId);
 
     for (const jobConfig of jobConfigs) {
       // Create the SQS dead letter queue for the job
@@ -61,5 +69,11 @@ export class ServerlessBackgroundJobsStack extends Stack {
         evaluationPeriods: 1,
       });
     }
+
+    // Create an output for the SNS topic ARN with a relevant export name so it can be imported and used in another stack (e.g. web application stack)
+    new CfnOutput(this, `${snsTopicId}Output`, {
+      value: snsTopic.topicArn,
+      exportName: snsTopicId,
+    });
   }
 }
