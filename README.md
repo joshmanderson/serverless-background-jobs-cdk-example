@@ -4,11 +4,11 @@ This project was bootstrapped with CDK following instructions from: https://docs
 
 This CDK project creates:
 
-- SNS Topic
-- SQS Queue
-- SQS Dead Letter Queue
-- Lambda Function
-- CloudWatch Alarm
+- SNS Topic (jobs are sent here)
+- SQS Queues (jobs move to the relevant SQS queue depending on the job name)
+- SQS Dead Letter Queues (jobs that repeatedly fail move to the associated dead letter queue)
+- Lambda Functions (jobs are processed here)
+- CloudWatch Alarms (when a DLQ has > X failed jobs an alarm is triggered)
 
 ## Welcome to your CDK TypeScript project!
 
