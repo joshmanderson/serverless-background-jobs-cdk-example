@@ -12,13 +12,14 @@ const pushupsJobConfig: JobConfig = {
   ...defaultJobConfig,
   name: "PushupsJob",
   maxAttempts: 3,
-  failedJobCountForAlarm: 3, // Purposefully set low for testing purposes
+  failedMessageAgeForAlarmSeconds: 600, // 10 minutes
 };
 
 async function processJob(event: SQSEvent, context: Context): Promise<void> {
   for (const record of event.Records) {
     const jobParams = parseJobParams<PushupsJobParams>(record);
 
+    // Included for testing purposes
     if (jobParams.shouldFail) {
       throw new Error("Job processing failed!");
     }

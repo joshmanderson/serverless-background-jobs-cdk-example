@@ -13,12 +13,14 @@ const greetingJobConfig: JobConfig = {
   ...defaultJobConfig,
   name: "GreetingJob",
   retryDelaySeconds: 15,
+  batchSize: 10,
 };
 
 async function processJob(event: SQSEvent, context: Context): Promise<void> {
   for (const record of event.Records) {
     const jobParams = parseJobParams<GreetingJobParams>(record);
 
+    // Included for testing purposes
     if (jobParams.shouldFail) {
       throw new Error("Job processing failed!");
     }
@@ -27,6 +29,7 @@ async function processJob(event: SQSEvent, context: Context): Promise<void> {
   }
 }
 
+// Note that the timezone used in this example is UTC
 function determineGreeting(): string {
   const currentHour = moment().hour();
 

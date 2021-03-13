@@ -45,11 +45,16 @@ export class ServerlessBackgroundJobsStack extends Stack {
         {
           entry: path.join("src", "jobs", `${jobConfig.name}.ts`),
           handler: "processJob",
+          timeout: Duration.seconds(jobConfig.timeoutSeconds),
         }
       );
 
       // Add the SQS queue as an event source for the lambda function
-      lambdaFunction.addEventSource(new SqsEventSource(sqsQueue));
+      lambdaFunction.addEventSource(
+        new SqsEventSource(sqsQueue, {
+          batchSize: jobConfig.batchSize,
+        })
+      );
 
       // Subscribe the SQS queue to the SNS topic
       snsTopic.addSubscription(
@@ -64,8 +69,8 @@ export class ServerlessBackgroundJobsStack extends Stack {
 
       // Create a CloudWatch alarm on the SQS dead letter queue
       new Alarm(this, `${jobConfig.name}FailureAlarm`, {
-        metric: sqsDeadLetterQueue.metricApproximateNumberOfMessagesVisible(),
-        threshold: jobConfig.failedJobCountForAlarm,
+        metric: sqsDeadLetterQueue.metricApproximateAgeOfOldestMessage(),
+        threshold: jobConfig.failedMessageAgeForAlarmSeconds,
         evaluationPeriods: 1,
       });
     }
