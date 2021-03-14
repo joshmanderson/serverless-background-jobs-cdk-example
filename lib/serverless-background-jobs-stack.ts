@@ -38,6 +38,17 @@ export class ServerlessBackgroundJobsStack extends Stack {
         },
       });
 
+      // Subscribe the SQS queue to the SNS topic
+      snsTopic.addSubscription(
+        new SqsSubscription(sqsQueue, {
+          filterPolicy: {
+            jobName: SubscriptionFilter.stringFilter({
+              whitelist: [jobConfig.name],
+            }),
+          },
+        })
+      );
+
       // Create the lambda function for the job
       const lambdaFunction = new NodejsFunction(
         this,
@@ -53,17 +64,6 @@ export class ServerlessBackgroundJobsStack extends Stack {
       lambdaFunction.addEventSource(
         new SqsEventSource(sqsQueue, {
           batchSize: jobConfig.batchSize,
-        })
-      );
-
-      // Subscribe the SQS queue to the SNS topic
-      snsTopic.addSubscription(
-        new SqsSubscription(sqsQueue, {
-          filterPolicy: {
-            jobName: SubscriptionFilter.stringFilter({
-              whitelist: [jobConfig.name],
-            }),
-          },
         })
       );
 
