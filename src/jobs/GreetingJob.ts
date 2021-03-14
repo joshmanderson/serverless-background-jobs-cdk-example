@@ -42,4 +42,4 @@ function determineGreeting(): string {
   }
 }
 
-export { GreetingJobParams, jobConfig, processJob };
+export { jobConfig, processJob };

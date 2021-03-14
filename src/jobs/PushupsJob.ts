@@ -36,4 +36,4 @@ async function processJob(event: SQSEvent, context: Context): Promise<void> {
   }
 }
 
-export { PushupsJobParams, jobConfig, processJob };
+export { jobConfig, processJob };
