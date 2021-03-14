@@ -8,7 +8,7 @@ interface PushupsJobParams {
   shouldFail: boolean;
 }
 
-const pushupsJobConfig: JobConfig = {
+const jobConfig: JobConfig = {
   ...defaultJobConfig,
   name: "PushupsJob",
   maxAttempts: 3,
@@ -36,4 +36,4 @@ async function processJob(event: SQSEvent, context: Context): Promise<void> {
   }
 }
 
-export { PushupsJobParams, pushupsJobConfig, processJob };
+export { PushupsJobParams, jobConfig, processJob };

@@ -9,7 +9,7 @@ interface GreetingJobParams {
   shouldFail: boolean;
 }
 
-const greetingJobConfig: JobConfig = {
+const jobConfig: JobConfig = {
   ...defaultJobConfig,
   name: "GreetingJob",
   retryDelaySeconds: 15,
@@ -42,4 +42,4 @@ function determineGreeting(): string {
   }
 }
 
-export { GreetingJobParams, greetingJobConfig, processJob };
+export { GreetingJobParams, jobConfig, processJob };

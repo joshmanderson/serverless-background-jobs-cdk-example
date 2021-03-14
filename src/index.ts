@@ -1,5 +1,5 @@
-import { greetingJobConfig } from "./jobs/GreetingJob";
-import { pushupsJobConfig } from "./jobs/PushupsJob";
+import { jobConfig as greetingJobConfig } from "./jobs/GreetingJob";
+import { jobConfig as pushupsJobConfig } from "./jobs/PushupsJob";
 import { JobConfig } from "./JobConfig";
 
 const jobConfigs: JobConfig[] = [greetingJobConfig, pushupsJobConfig];
