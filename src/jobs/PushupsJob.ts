@@ -10,7 +10,7 @@ interface PushupsJobParams {
 
 const jobConfig: JobConfig = {
   ...defaultJobConfig,
-  name: "PushupsJob",
+  name: "PushupsJob", // This must match the name of the file
   maxAttempts: 3,
   failedMessageAgeForAlarmSeconds: 600, // 10 minutes
 };
@@ -29,6 +29,7 @@ async function processJob(event: SQSEvent, context: Context): Promise<void> {
     while (pushupsCompleted < jobParams.pushupsRequired) {
       pushupsCompleted++;
 
+      // Logs "1!", "2!", "3!" etc.
       console.log(`${pushupsCompleted}!`);
     }
 

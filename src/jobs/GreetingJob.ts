@@ -11,7 +11,7 @@ interface GreetingJobParams {
 
 const jobConfig: JobConfig = {
   ...defaultJobConfig,
-  name: "GreetingJob",
+  name: "GreetingJob", // This must match the name of the file
   retryDelaySeconds: 15,
   batchSize: 10,
 };
@@ -25,6 +25,7 @@ async function processJob(event: SQSEvent, context: Context): Promise<void> {
       throw new Error("Job processing failed!");
     }
 
+    // Logs "Good morning Harriet!" for example
     console.log(`${determineGreeting()} ${jobParams.friendName}!`);
   }
 }
