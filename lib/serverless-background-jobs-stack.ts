@@ -25,6 +25,12 @@ export class ServerlessBackgroundJobsStack extends Stack {
     // Create the SNS topic
     const snsTopic = new Topic(this, snsTopicId);
 
+    // Create an output for the SNS topic ARN with a relevant export name so it can be imported and used in another stack (e.g. web application stack)
+    new CfnOutput(this, `${snsTopicId}Output`, {
+      value: snsTopic.topicArn,
+      exportName: snsTopicId,
+    });
+
     for (const jobConfig of jobConfigs) {
       // Create the SQS dead letter queue for the job
       const sqsDeadLetterQueue = new Queue(this, `${jobConfig.name}DLQ`);
@@ -74,11 +80,5 @@ export class ServerlessBackgroundJobsStack extends Stack {
         evaluationPeriods: 1,
       });
     }
-
-    // Create an output for the SNS topic ARN with a relevant export name so it can be imported and used in another stack (e.g. web application stack)
-    new CfnOutput(this, `${snsTopicId}Output`, {
-      value: snsTopic.topicArn,
-      exportName: snsTopicId,
-    });
   }
 }
