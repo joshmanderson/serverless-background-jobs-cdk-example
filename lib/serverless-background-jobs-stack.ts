@@ -28,7 +28,7 @@ export class ServerlessBackgroundJobsStack extends Stack {
     // Create an output for the SNS topic ARN with a relevant export name so it can be imported and used in another stack (e.g. web application stack)
     new CfnOutput(this, `${snsTopicId}Output`, {
       value: snsTopic.topicArn,
-      exportName: snsTopicId,
+      exportName: snsTopicId, // note that this export name must be unique across all of your CloudFormation stacks
     });
 
     for (const jobConfig of jobConfigs) {
